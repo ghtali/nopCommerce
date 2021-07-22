@@ -1570,14 +1570,10 @@ namespace Nop.Web.Factories
             model.ProductName = await _localizationService.GetLocalizedAsync(product, x => x.Name);
             model.ProductSeName = await _urlRecordService.GetSeNameAsync(product);
 
-            var productReviews = (await _productService.GetAllProductReviewsAsync(
+            var productReviews = await _productService.GetAllProductReviewsAsync(
                 approved: true, 
                 productId: product.Id,
-                storeId: _catalogSettings.ShowProductReviewsPerStore ? (await _storeContext.GetCurrentStoreAsync()).Id : 0)).AsEnumerable();
-
-            productReviews = _catalogSettings.ProductReviewsSortByCreatedDateAscending
-                ? productReviews.OrderBy(pr => pr.CreatedOnUtc)
-                : productReviews.OrderByDescending(pr => pr.CreatedOnUtc);
+                storeId: _catalogSettings.ShowProductReviewsPerStore ? (await _storeContext.GetCurrentStoreAsync()).Id : 0);
 
             //get all review types
             foreach (var reviewType in await _reviewTypeService.GetAllReviewTypesAsync())
@@ -1700,9 +1696,10 @@ namespace Nop.Web.Factories
                 pageIndex = page.Value - 1;
             }
 
-            var list = await _productService.GetAllProductReviewsAsync(customerId: (await _workContext.GetCurrentCustomerAsync()).Id,
+            var list = await _productService.GetAllProductReviewsAsync(
+                customerId: (await _workContext.GetCurrentCustomerAsync()).Id,
                 approved: null,
-                storeId: (await _storeContext.GetCurrentStoreAsync()).Id,
+                storeId: _catalogSettings.ShowProductReviewsPerStore ? (await _storeContext.GetCurrentStoreAsync()).Id : 0,
                 pageIndex: pageIndex,
                 pageSize: pageSize);
 
